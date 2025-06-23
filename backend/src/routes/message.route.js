@@ -50,9 +50,6 @@ router.get("/:id", protectRoute, getMessages);
 // Upload an image independently (e.g., pasted image)
 router.post("/upload", protectRoute, uploadImage);
 
-//seen indicator
-router.put("/seen", verifyToken, markMessagesAsSeen);
-
 // Send a message with optional file (image, document, video)
 router.post(
 "/send/:userId",

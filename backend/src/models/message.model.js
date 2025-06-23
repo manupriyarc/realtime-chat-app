@@ -18,15 +18,12 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
-    status: {
-    type: String,
-    enum: ["sent", "delivered", "seen"],
-    default: "sent"
-  },
-  createdAt: { type: Date, default: Date.now }
+    content: String,
+    deliveredTo: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    seenAt: Date,
   },
   { timestamps: true }
-  
 );
 
 const Message = mongoose.model("Message", messageSchema);
