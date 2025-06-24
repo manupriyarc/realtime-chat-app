@@ -234,57 +234,59 @@
 // };
 // export default MessageInput;
 
-import { useRef, useState } from "react";
-import { useChatStore } from "../store/useChatStore";
-import { Image, Send, X, FileText, Smile } from "lucide-react";
-import EmojiPicker from "emoji-picker-react";
-import toast from "react-hot-toast";
+"use client"
+
+import { useRef, useState } from "react"
+import { useChatStore } from "../store/useChatStore"
+import { ImageIcon, Send, X, Smile } from "lucide-react"
+import EmojiPicker from "emoji-picker-react"
+import toast from "react-hot-toast"
 
 const MessageInput = () => {
-  const [text, setText] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
-  const [file, setFile] = useState(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [text, setText] = useState("")
+  const [imagePreview, setImagePreview] = useState(null)
+  const [file, setFile] = useState(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
-  const fileInputRef = useRef(null);
-  const { sendMessage } = useChatStore();
+  const fileInputRef = useRef(null)
+  const { sendMessage } = useChatStore()
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (!selectedFile) return;
+    const selectedFile = e.target.files[0]
+    if (!selectedFile) return
 
     if (selectedFile.type.startsWith("image/")) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFile(null);
-      };
-      reader.readAsDataURL(selectedFile);
+        setImagePreview(reader.result)
+        setFile(null)
+      }
+      reader.readAsDataURL(selectedFile)
     } else {
-      setFile(selectedFile);
-      setImagePreview(null);
+      setFile(selectedFile)
+      setImagePreview(null)
     }
-  };
+  }
 
   const removePreview = () => {
-    setImagePreview(null);
-    setFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+    setImagePreview(null)
+    setFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
 
   const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!text.trim() && !imagePreview && !file) return;
+    e.preventDefault()
+    if (!text.trim() && !imagePreview && !file) return
 
     try {
-      await sendMessage({ text, image: imagePreview, file });
-      setText("");
-      removePreview();
+      await sendMessage({ text, image: imagePreview, file })
+      setText("")
+      removePreview()
     } catch (error) {
-      toast.error("Failed to send message");
-      console.error(error);
+      toast.error("Failed to send message")
+      console.error(error)
     }
-  };
+  }
 
   return (
     <div className="p-4 w-full">
@@ -293,12 +295,17 @@ const MessageInput = () => {
           <div className="relative">
             {imagePreview ? (
               <img
-                src={imagePreview}
+                src={imagePreview || "/placeholder.svg"}
                 alt="Preview"
                 className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
               />
             ) : (
-              <p className="text-sm text-zinc-500">{file?.name}</p>
+              <div className="flex items-center gap-2 p-2 bg-base-200 rounded-lg">
+                <div className="w-8 h-8 bg-base-300 rounded flex items-center justify-center">
+                  <span className="text-xs font-medium">{file?.name?.split(".").pop()?.toUpperCase() || "FILE"}</span>
+                </div>
+                <span className="text-sm text-zinc-500 truncate max-w-32">{file?.name}</span>
+              </div>
             )}
             <button
               onClick={removePreview}
@@ -320,42 +327,49 @@ const MessageInput = () => {
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
-          <input
-            type="file"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-          />
+          <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
 
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="btn btn-circle text-zinc-500"
+            className={`btn btn-circle ${imagePreview ? "text-emerald-500" : "text-zinc-500"}`}
+            title="Upload image or file"
           >
-            <FileText size={20} />
+            <ImageIcon size={20} />
           </button>
 
           <button
             type="button"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             className="btn btn-circle text-zinc-500"
+            title="Add emoji"
           >
             <Smile size={20} />
           </button>
 
           {showEmojiPicker && (
-            <div className="absolute bottom-12 z-50">
-              <EmojiPicker onEmojiClick={(e) => setText((prev) => prev + e.emoji)} />
+            <div className="absolute bottom-12 right-0 z-50">
+              <EmojiPicker
+                onEmojiClick={(e) => {
+                  setText((prev) => prev + e.emoji)
+                  setShowEmojiPicker(false)
+                }}
+              />
             </div>
           )}
         </div>
 
-        <button type="submit" className="btn btn-sm btn-circle" disabled={!text.trim() && !imagePreview && !file}>
+        <button
+          type="submit"
+          className="btn btn-sm btn-circle"
+          disabled={!text.trim() && !imagePreview && !file}
+          title="Send message"
+        >
           <Send size={22} />
         </button>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default MessageInput;
+export default MessageInput
